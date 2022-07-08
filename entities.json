@@ -1,0 +1,53 @@
+{
+    "Module": "x",
+    "Folder": "examples/model/domain/",
+    "Entities" : [
+        {
+            "Name": "user",
+            "Description": "Tish is an user",
+            "Fields": [
+                {
+                    "Name": "id",
+                    "Type": "bigint",
+                    "Description": "Primary key for user",
+                    "PrimaryKey": true,
+                    "Serchable": true,
+                    "Exposed": true
+                },
+                {
+                    "Name": "username",
+                    "Type": "string",
+                    "Description": "User username",
+                    "Serchable": true,
+                    "Exposed": true
+                },
+                {
+                    "Name": "name",
+                    "Type": "string",
+                    "Description": "User name",
+                    "Exposed": true
+                },
+                {
+                    "Name": "surname",
+                    "Type": "string",
+                    "Description": "User surname",
+                    "Exposed": true
+                },
+                {
+                    "Name": "password",
+                    "Type": "string",
+                    "Description": "User's password",
+                    "Private": true,
+                    "Exposed": true
+                },
+                {
+                    "Name": "phone",
+                    "Type": "string",
+                    "Multiple": true,
+                    "Description": "User's phone",
+                    "Exposed": true
+                }
+            ]
+        }
+    ]
+}
