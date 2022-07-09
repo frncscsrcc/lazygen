@@ -7,14 +7,13 @@ package role
 
 import (
 	"encoding/json"
-    "errors"
-	
+	"errors"
 )
 
 // DTO to marshal in JSON
 type DTO struct {
-    Id int64 `json:"id"`
-    Name string `json:"name"`
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 // -------------------------------------------
@@ -27,40 +26,37 @@ func (x *RoleBase) ToDTO() *DTO {
 }
 
 func (dto *DTO) ToType() *Role {
-    role := NewRole()
+	role := NewRole()
 	role.id = dto.Id
 	role.name = dto.Name
 	return role
 }
 
-
 // -------------------------------------------
 
 // FromJSON generate a *Role from a valid json (bytes)
 
-func FromJSON (jsonBytes []byte) (*Role, error) {
+func FromJSON(jsonBytes []byte) (*Role, error) {
 	role := &Role{}
 	dto := &DTO{}
 	err := json.Unmarshal(jsonBytes, dto)
 	if err != nil {
-        return NewRole(), errors.New("can not unmarshal RoleDTO")
+		return NewRole(), errors.New("can not unmarshal RoleDTO")
 	}
 	role.id = dto.Id
 	role.name = dto.Name
 	return role, nil
 }
 
-
 // ToJSON generate a valid JSON (bytes) from *Role
-func (x *RoleBase) ToJSON () (string, error) {
+func (x *RoleBase) ToJSON() (string, error) {
 	dto := DTO{}
 	dto.Id = x.id
 	dto.Name = x.name
 
 	bytes, err := json.Marshal(dto)
-    if err != nil {
-        return "", err
-    }
-    return string(bytes), nil
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
-

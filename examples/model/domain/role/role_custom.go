@@ -1,14 +1,12 @@
 // Role: This is a Role description
 package role
 
-
 // Role allows to overwrite the base class
 type Role struct {
-	RoleBase 
+	RoleBase
 
-    // add public or private fields here
+	// add public or private fields here
 }
-
 
 /*
 Overwrite functions defined in ./user.go
