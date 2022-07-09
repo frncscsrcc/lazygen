@@ -4,9 +4,8 @@
 
 // User: Tish is an user
 package user
-
 import (
-	"encoding/json"
+	"github.com/frncscsrcc/lazygen/examples/model/domain/role"
 )
 
 // UserBase is the base struct with the default getters and setters
@@ -17,19 +16,10 @@ type UserBase struct {
 	surname string // User surname
 	password string // User's password
 	phone []string // User's phone
+	role *role.Role // User role
 
 	error error
 	self *User
-}
-
-// userDTO to marshal in JSON
-type userDTO struct {
-	Id int64 `json:"id"`
-	Username string `json:"username"`
-	Name string `json:"name"`
-	Surname string `json:"surname"`
-	Password string `json:"password"`
-	Phone []string `json:"phone"`
 }
 
 // -------------------------------------------
@@ -37,6 +27,7 @@ type userDTO struct {
 // NewUser returns a pointer to a new NewUser object
 func NewUser() *User {
 	user := &User{}
+	user.phone = make([]string, 0)
 	user.self = user
 	return user
 }
@@ -134,43 +125,24 @@ func (x *UserBase) AppendPhone (v ...string) *User {
 }
 
 
-
-// -------------------------------------------
-
-// Unmarshal generate a *User from a valid json (bytes)
-func Unmarshal (jsonBytes []byte) *User {
-	user := &User{}
-	dto := &userDTO{}
-	err := json.Unmarshal(jsonBytes, dto)
-	if err != nil {
-		panic("can not unmarshal UserDTO")
-	}
-	user.id = dto.Id
-	user.username = dto.Username
-	user.name = dto.Name
-	user.surname = dto.Surname
-	user.password = dto.Password
-	user.phone = dto.Phone
-	return user
+// Role returns User.role
+func (x *UserBase) Role () *role.Role {
+	return x.role
 }
 
-// Mashal generate a valid JSON (bytes) from *User
-func (x *UserBase) Marshal () ([]byte, error) {
-	dto := userDTO{}
-	dto.Id = x.id
-	dto.Username = x.username
-	dto.Name = x.name
-	dto.Surname = x.surname
-	dto.Password = x.password
-	dto.Phone = x.phone
-
-	return json.Marshal(dto)
+// SetRole sets User.role
+func (x *UserBase) SetRole (v *role.Role) *User {
+	x.role = v
+	return x.self
 }
 
 // -------------------------------------------
 
 // String implements Stringer
 func (x *UserBase) String () string {
-	jsonBytes, _ := x.Marshal()
-	return "*User" + string(jsonBytes)
+	jsonString, err := x.ToJSON()
+	if err != nil {
+		panic(err)
+	}
+	return "*User" + jsonString
 }

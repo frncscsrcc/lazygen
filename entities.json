@@ -1,5 +1,5 @@
 {
-    "Module": "x",
+    "Module": "github.com/frncscsrcc/lazygen",
     "Folder": "examples/model/domain/",
     "Entities" : [
         {
@@ -46,7 +46,34 @@
                     "Multiple": true,
                     "Description": "User's phone",
                     "Exposed": true
+                },
+                {
+                    "Name": "role",
+                    "Type": "Role",
+                    "Description": "User role",
+                    "Exposed": true
                 }
+            ]
+        },
+        {
+            "Name": "role",
+            "Description": "This is a Role description",
+            "Fields": [
+                {
+                    "Name": "id",
+                    "Type": "bigint",
+                    "Description": "Primary key for role",
+                    "PrimaryKey": true,
+                    "Serchable": true,
+                    "Exposed": true
+                },
+                {
+                    "Name": "name",
+                    "Type": "string",
+                    "Description": "Role name",
+                    "Serchable": true,
+                    "Exposed": true
+                } 
             ]
         }
     ]

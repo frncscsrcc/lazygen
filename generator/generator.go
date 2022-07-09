@@ -14,6 +14,7 @@ import (
 type Field struct {
 	Name        string
 	Type        string
+	Custom      bool
 	Multiple    bool
 	Description string
 	PrimaryKey  bool
@@ -25,7 +26,8 @@ type Field struct {
 type EntityConfig struct {
 	Name        string
 	Description string
-	Fields      []Field
+	Fields      []*Field
+	Requires    []string
 }
 
 type Config struct {
@@ -34,10 +36,17 @@ type Config struct {
 	Entities []EntityConfig
 }
 
+var entities map[string]bool
+
 var funcMap = template.FuncMap{
 	"fc":          FistCapital,
 	"lc":          LowerCase,
 	"typeConvert": TypeConvert,
+	"getDTO":      GetDTO,
+}
+
+func init() {
+	entities = make(map[string]bool)
 }
 
 func Generate(settingFile string) {
@@ -55,10 +64,24 @@ func Generate(settingFile string) {
 	//outputFolder := config.Folder
 
 	for _, entity := range config.Entities {
+		entities[strings.ToUpper(entity.Name)] = true
+	}
+
+	for _, entity := range config.Entities {
 		folder := config.Folder + "/" + LowerCase(entity.Name)
 		os.MkdirAll(folder, 0755)
 
+		entity.Requires = make([]string, 0)
+		for _, field := range entity.Fields {
+			if _, validEntity := entities[strings.ToUpper(field.Type)]; validEntity {
+				pkg := config.Module + "/" + config.Folder + strings.ToLower(field.Type)
+				entity.Requires = append(entity.Requires, pkg)
+				field.Custom = true
+			}
+		}
+
 		generateTypes(folder+"/"+LowerCase(entity.Name)+".go", entity)
+		generateMarshal(folder+"/"+LowerCase(entity.Name)+"_marshal.go", entity)
 		generateCustom(folder+"/"+LowerCase(entity.Name)+"_custom.go", entity)
 	}
 }
@@ -77,8 +100,22 @@ func LowerCase(input string) string {
 	return strings.ToLower(input)
 }
 
+func GetDTO(inputType string) string {
+	inputTypeUc := strings.ToUpper(inputType)
+	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
+		return "*" + LowerCase(inputType) + ".DTO"
+	}
+	return TypeConvert(inputType)
+}
+
 func TypeConvert(inputType string) string {
-	switch strings.ToUpper(inputType) {
+	inputTypeUc := strings.ToUpper(inputType)
+
+	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
+		return "*" + LowerCase(inputType) + "." + FistCapital(inputType)
+	}
+
+	switch inputTypeUc {
 	case "INT":
 		return "int"
 	case "BIGINT":
@@ -105,6 +142,29 @@ func generateTypes(filename string, config EntityConfig) {
 	tmpl, err := template.New("type.tpl").
 		Funcs(funcMap).
 		ParseFiles("./generator/templates/type.tpl")
+	if err != nil {
+		panic(err)
+	}
+
+	tmpl.Execute(file, config)
+	log.Printf("- %s generated\n", filename)
+}
+
+func generateMarshal(filename string, config EntityConfig) {
+	file, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	// close fi on exit and check for its returned error
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	tmpl, err := template.New("marshal.tpl").
+		Funcs(funcMap).
+		ParseFiles("./generator/templates/marshal.tpl")
 	if err != nil {
 		panic(err)
 	}

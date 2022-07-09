@@ -5,9 +5,11 @@
 // {{ .Name | fc }}: {{ .Description }}
 package {{ .Name | lc }}
 
+{{- if .Requires }}
 import (
-	"encoding/json"
+	{{ range .Requires }}"{{ . }}"{{ end }}
 )
+{{- end }}
 
 // {{ .Name | fc }}Base is the base struct with the default getters and setters
 type {{ .Name | fc }}Base struct {
@@ -20,18 +22,12 @@ type {{ .Name | fc }}Base struct {
 	self *{{ .Name | fc }}
 }
 
-// {{ .Name | lc }}DTO to marshal in JSON
-type {{ .Name | lc }}DTO struct {
-	{{- range .Fields }}
-	{{ .Name | fc }} {{if .Multiple }}[]{{ end }}{{ .Type | typeConvert }} `json:"{{ .Name | lc }}"`
-	{{- end }}
-}
-
 // -------------------------------------------
 
 // New{{ .Name | fc }} returns a pointer to a new New{{ .Name | fc }} object
 func New{{ .Name | fc }}() *{{ .Name | fc }} {
 	{{ .Name | lc }} := &{{ .Name | fc }}{}
+	{{ range .Fields }}{{- if .Multiple}}{{ $.Name | lc }}.{{ .Name | lc }} = make([]{{ .Type | typeConvert }}, 0){{- end }}{{ end }}
 	{{ .Name | lc }}.self = {{ .Name | lc }}
 	return {{ .Name | lc }}
 }
@@ -99,36 +95,11 @@ func (x *{{ $.Name | fc }}Base) Set{{ .Name | fc }} (v {{ .Type | typeConvert}})
 
 // -------------------------------------------
 
-// Unmarshal generate a *{{ .Name | fc }} from a valid json (bytes)
-func Unmarshal (jsonBytes []byte) *{{ .Name | fc }} {
-	{{ .Name | lc }} := &{{ .Name | fc }}{}
-	dto := &{{ .Name | lc }}DTO{}
-	err := json.Unmarshal(jsonBytes, dto)
-	if err != nil {
-		panic("can not unmarshal {{ .Name | fc }}DTO")
-	}
-	{{- range .Fields }}
-	{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}
-	{{- end }}
-	return {{ .Name | lc }}
-}
-
-// Mashal generate a valid JSON (bytes) from *{{ $.Name | fc }}
-func (x *{{ $.Name | fc }}Base) Marshal () ([]byte, error) {
-	dto := {{ .Name | lc }}DTO{}
-	{{- range .Fields }}
-	{{- if .Exposed }}
-	dto.{{ .Name | fc }} = x.{{ .Name | lc }}
-	{{- end }}
-	{{- end }}
-
-	return json.Marshal(dto)
-}
-
-// -------------------------------------------
-
 // String implements Stringer
 func (x *{{ $.Name | fc }}Base) String () string {
-	jsonBytes, _ := x.Marshal()
-	return "*{{ $.Name | fc }}" + string(jsonBytes)
+	jsonString, err := x.ToJSON()
+	if err != nil {
+		panic(err)
+	}
+	return "*{{ $.Name | fc }}" + jsonString
 }
