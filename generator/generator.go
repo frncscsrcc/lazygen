@@ -84,9 +84,9 @@ func Generate(settingFile string) []string {
 		generateTypes(typeSourceFile, entity)
 		generatedFiles = append(generatedFiles, typeSourceFile)
 
-		marshalSourceFile := folder + "/" + LowerCase(entity.Name) + "_marshal.go"
-		generateMarshal(marshalSourceFile, entity)
-		generatedFiles = append(generatedFiles, marshalSourceFile)
+		serializationlSourceFile := folder + "/" + LowerCase(entity.Name) + "_serialization.go"
+		generateSerialization(serializationlSourceFile, entity)
+		generatedFiles = append(generatedFiles, serializationlSourceFile)
 
 		customSourceFile := folder + "/" + LowerCase(entity.Name) + "_custom.go"
 		generateCustom(customSourceFile, entity)
@@ -160,7 +160,7 @@ func generateTypes(filename string, config EntityConfig) {
 	log.Printf("- %s generated\n", filename)
 }
 
-func generateMarshal(filename string, config EntityConfig) {
+func generateSerialization(filename string, config EntityConfig) {
 	file, err := os.Create(filename)
 	if err != nil {
 		panic(err)
@@ -174,7 +174,7 @@ func generateMarshal(filename string, config EntityConfig) {
 
 	tmpl, err := template.New("marshal.tpl").
 		Funcs(funcMap).
-		ParseFiles("./generator/templates/marshal.tpl")
+		ParseFiles("./generator/templates/serialization.tpl")
 	if err != nil {
 		panic(err)
 	}
