@@ -38,6 +38,11 @@ Entities:
     Type: Role
     Description: User role
     Exposed: true
+  - Name: addresses
+    Type: Address
+    Description: User addresses
+    Exposed: true
+    Multiple: true
 - Name: role
   Description: This is a Role description
   Fields:
@@ -51,4 +56,24 @@ Entities:
     Type: string
     Description: Role name
     Serchable: true
+    Exposed: true
+- Name: address
+  Description: This entity reppresent an user address
+  Fields:
+  - Name: id
+    Type: bigint
+    PrimaryKey: true
+    Serchable: true
+    Exposed: true
+  - Name: street
+    Type: string
+    Exposed: true
+  - Name: number
+    Type: string
+    Exposed: true
+  - Name: zip
+    Type: string
+    Exposed: true
+  - Name: country
+    Type: string
     Exposed: true

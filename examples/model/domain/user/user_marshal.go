@@ -7,19 +7,20 @@ package user
 
 import (
 	"encoding/json"
-	"errors"
+	"github.com/frncscsrcc/lazygen/examples/model/domain/address"
 	"github.com/frncscsrcc/lazygen/examples/model/domain/role"
 )
 
 // DTO to marshal in JSON
 type DTO struct {
-	Id       int64     `json:"id"`
-	Username string    `json:"username"`
-	Name     string    `json:"name"`
-	Surname  string    `json:"surname"`
-	Password string    `json:"password"`
-	Phone    []string  `json:"phone"`
-	Role     *role.DTO `json:"role"`
+	Id        int64          `json:"id"`
+	Username  string         `json:"username"`
+	Name      string         `json:"name"`
+	Surname   string         `json:"surname"`
+	Password  string         `json:"password"`
+	Phone     []string       `json:"phone"`
+	Role      *role.DTO      `json:"role"`
+	Addresses []*address.DTO `json:"addresses"`
 }
 
 // -------------------------------------------
@@ -32,7 +33,15 @@ func (x *UserBase) ToDTO() *DTO {
 	dto.Surname = x.surname
 	dto.Password = x.password
 	dto.Phone = x.phone
-	dto.Role = x.role.ToDTO()
+	if x.role != nil {
+		dto.Role = x.role.ToDTO()
+	}
+	dto.Addresses = make([]*address.DTO, 0)
+	for _, address := range x.addresses {
+		if address != nil {
+			dto.Addresses = append(dto.Addresses, address.ToDTO())
+		}
+	}
 	return dto
 }
 
@@ -44,25 +53,33 @@ func (dto *DTO) ToType() *User {
 	user.surname = dto.Surname
 	user.password = dto.Password
 	user.phone = dto.Phone
-	user.role = dto.Role.ToType()
+	if dto.Role != nil {
+		user.role = dto.Role.ToType()
+	}
+	user.addresses = make([]*address.Address, 0)
+	for _, address := range dto.Addresses {
+		if address != nil {
+			user.addresses = append(user.addresses, address.ToType())
+		}
+	}
 	return user
 }
 
 // -------------------------------------------
 
-// FromJSON generate a *User from a valid json (bytes)
+// FromJSON generate a *User from a valid json (passed as string)
 
-func FromJSON(jsonBytes []byte) (*User, error) {
+func FromJSON(jsonString string) (*User, error) {
 	dto := &DTO{}
-	err := json.Unmarshal(jsonBytes, dto)
+	err := json.Unmarshal([]byte(jsonString), dto)
 	if err != nil {
-		return NewUser(), errors.New("can not unmarshal UserDTO")
+		return NewUser(), err
 	}
 	user := dto.ToType()
 	return user, nil
 }
 
-// ToJSON generate a valid JSON (bytes) from *User
+// ToJSON generate a valid JSON (as string) from *User
 func (x *UserBase) ToJSON() (string, error) {
 	dto := x.ToDTO()
 

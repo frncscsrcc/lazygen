@@ -7,8 +7,9 @@ package {{ .Name | lc }}
 
 import (
 	"encoding/json"
-    "errors"
-	{{ range .Requires }}"{{ . }}"{{ end }}
+	{{- range .Requires }}
+	"{{ . }}"
+	{{- end }}
 )
 
 // DTO to marshal in JSON
@@ -24,7 +25,22 @@ func (x *{{ $.Name | fc }}Base) ToDTO() *DTO {
 	dto := &DTO{}
 	{{- range .Fields }}
 	{{- if .Exposed }}
-	dto.{{ .Name | fc }} = x.{{ .Name | lc }}{{- if .Custom }}.ToDTO(){{- end }}
+	{{- if .Custom }}
+	{{- if .Multiple}}
+	dto.{{ .Name | fc }} = make([]*{{ .Type | lc }}.DTO, 0)
+	for _, {{ .Type | lc }} := range(x.{{ .Name }}) {
+		if {{ .Type | lc }} != nil {
+			dto.{{ .Name | fc }} = append(dto.{{ .Name | fc }}, {{ .Type | lc }}.ToDTO())
+		}
+	}
+	{{- else }}
+	if x.{{ .Name | lc }} != nil {
+		dto.{{ .Name | fc }} = x.{{ .Name | lc }}.ToDTO()
+	}
+	{{- end }}
+	{{- else }}
+	dto.{{ .Name | fc }} = x.{{ .Name | lc }}
+	{{- end }}
 	{{- end }}
 	{{- end }}
 	return dto
@@ -34,7 +50,22 @@ func (dto *DTO) ToType() *{{ $.Name | fc }} {
     {{ $.Name | lc }} := New{{ $.Name | fc }}()
 	{{- range .Fields }}
 	{{- if .Exposed }}
-	{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}{{- if .Custom }}.ToType(){{- end }}
+	{{- if .Custom }}
+	{{- if .Multiple }}
+	{{ $.Name | lc }}.{{ .Name | lc }} = make([]*{{ .Type | lc }}.{{ .Type | fc }}, 0)
+	for _, {{ .Type | lc }} := range(dto.{{ .Name | fc }} ){
+		if {{ .Type | lc }} != nil {
+			{{ $.Name | lc }}.{{ .Name | lc }} = append({{ $.Name | lc }}.{{ .Name | lc }}, {{ .Type | lc }}.ToType())
+		}
+	}
+	{{- else }}
+	if dto.{{ .Name | fc }} != nil {
+		{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}.ToType()
+	}
+	{{- end }}
+	{{- else }}
+	{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}
+	{{- end }}
 	{{- end }}
 	{{- end }}
 	return {{ $.Name | lc }}
@@ -43,20 +74,20 @@ func (dto *DTO) ToType() *{{ $.Name | fc }} {
 
 // -------------------------------------------
 
-// FromJSON generate a *{{ .Name | fc }} from a valid json (bytes)
+// FromJSON generate a *{{ .Name | fc }} from a valid json (passed as string)
 
-func FromJSON (jsonBytes []byte) (*{{ .Name | fc }}, error) {
+func FromJSON (jsonString string) (*{{ .Name | fc }}, error) {
 	dto := &DTO{}
-	err := json.Unmarshal(jsonBytes, dto)
+	err := json.Unmarshal([]byte(jsonString), dto)
 	if err != nil {
-        return New{{ .Name | fc }}(), errors.New("can not unmarshal {{ .Name | fc }}DTO")
+        return New{{ .Name | fc }}(), err
 	}
 	{{ .Name | lc }} := dto.ToType()
 	return {{ .Name | lc }}, nil
 }
 
 
-// ToJSON generate a valid JSON (bytes) from *{{ $.Name | fc }}
+// ToJSON generate a valid JSON (as string) from *{{ $.Name | fc }}
 func (x *{{ $.Name | fc }}Base) ToJSON () (string, error) {
 	dto := x.ToDTO()
 

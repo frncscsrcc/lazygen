@@ -7,7 +7,6 @@ package role
 
 import (
 	"encoding/json"
-	"errors"
 )
 
 // DTO to marshal in JSON
@@ -34,19 +33,19 @@ func (dto *DTO) ToType() *Role {
 
 // -------------------------------------------
 
-// FromJSON generate a *Role from a valid json (bytes)
+// FromJSON generate a *Role from a valid json (passed as string)
 
-func FromJSON(jsonBytes []byte) (*Role, error) {
+func FromJSON(jsonString string) (*Role, error) {
 	dto := &DTO{}
-	err := json.Unmarshal(jsonBytes, dto)
+	err := json.Unmarshal([]byte(jsonString), dto)
 	if err != nil {
-		return NewRole(), errors.New("can not unmarshal RoleDTO")
+		return NewRole(), err
 	}
 	role := dto.ToType()
 	return role, nil
 }
 
-// ToJSON generate a valid JSON (bytes) from *Role
+// ToJSON generate a valid JSON (as string) from *Role
 func (x *RoleBase) ToJSON() (string, error) {
 	dto := x.ToDTO()
 

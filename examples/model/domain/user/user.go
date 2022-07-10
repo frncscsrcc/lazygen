@@ -6,18 +6,20 @@
 package user
 
 import (
+	"github.com/frncscsrcc/lazygen/examples/model/domain/address"
 	"github.com/frncscsrcc/lazygen/examples/model/domain/role"
 )
 
 // UserBase is the base struct with the default getters and setters
 type UserBase struct {
-	id       int64      // Primary key for user
-	username string     // User username
-	name     string     // User name
-	surname  string     // User surname
-	password string     // User's password
-	phone    []string   // User's phone
-	role     *role.Role // User role
+	id        int64              // Primary key for user
+	username  string             // User username
+	name      string             // User name
+	surname   string             // User surname
+	password  string             // User's password
+	phone     []string           // User's phone
+	role      *role.Role         // User role
+	addresses []*address.Address // User addresses
 
 	error error
 	self  *User
@@ -28,7 +30,11 @@ type UserBase struct {
 // NewUser returns a pointer to a new NewUser object
 func NewUser() *User {
 	user := &User{}
+
 	user.phone = make([]string, 0)
+
+	user.addresses = make([]*address.Address, 0)
+
 	user.self = user
 	return user
 }
@@ -138,6 +144,32 @@ func (x *UserBase) Role() *role.Role {
 // SetRole sets User.role
 func (x *UserBase) SetRole(v *role.Role) *User {
 	x.role = v
+	return x.self
+}
+
+// Addresses returns []User.addresses
+func (x *UserBase) Addresses() []*address.Address {
+	return x.addresses
+}
+
+func (x *UserBase) AddressesIsEmpty() bool {
+	return len(x.addresses) == 0
+}
+
+// AddressesSize returns the size of the array User.addresses
+func (x *UserBase) AddressesSize() int {
+	return len(x.addresses)
+}
+
+// SetAddresses sets User.addresses
+func (x *UserBase) SetAddresses(v []*address.Address) *User {
+	x.addresses = v
+	return x.self
+}
+
+// AppendAddresses append User.addresses
+func (x *UserBase) AppendAddresses(v ...*address.Address) *User {
+	x.addresses = append(x.addresses, v...)
 	return x.self
 }
 
