@@ -19,7 +19,6 @@ type RoleBase struct {
 // NewRole returns a pointer to a new NewRole object
 func NewRole() *Role {
 	role := &Role{}
-
 	role.self = role
 	return role
 }

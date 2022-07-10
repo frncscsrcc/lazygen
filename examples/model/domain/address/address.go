@@ -22,7 +22,6 @@ type AddressBase struct {
 // NewAddress returns a pointer to a new NewAddress object
 func NewAddress() *Address {
 	address := &Address{}
-
 	address.self = address
 	return address
 }

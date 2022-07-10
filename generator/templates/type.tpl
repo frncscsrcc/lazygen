@@ -29,10 +29,11 @@ type {{ .Name | fc }}Base struct {
 // New{{ .Name | fc }} returns a pointer to a new New{{ .Name | fc }} object
 func New{{ .Name | fc }}() *{{ .Name | fc }} {
 	{{ .Name | lc }} := &{{ .Name | fc }}{}
-	{{ range .Fields }}
-	{{- if .Multiple}}{{ $.Name | lc }}.{{ .Name | lc }} = make([]{{ .Type | typeConvert }}, 0)
+	{{- range .Fields }}
+	{{- if .Multiple}}
+	{{ $.Name | lc }}.{{ .Name | lc }} = make([]{{ .Type | typeConvert }}, 0)
 	{{- end }}
-	{{ end }}
+	{{- end }}
 	{{ .Name | lc }}.self = {{ .Name | lc }}
 	return {{ .Name | lc }}
 }

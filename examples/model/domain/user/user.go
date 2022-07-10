@@ -30,11 +30,8 @@ type UserBase struct {
 // NewUser returns a pointer to a new NewUser object
 func NewUser() *User {
 	user := &User{}
-
 	user.phone = make([]string, 0)
-
 	user.addresses = make([]*address.Address, 0)
-
 	user.self = user
 	return user
 }
