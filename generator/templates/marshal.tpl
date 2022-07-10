@@ -46,27 +46,19 @@ func (dto *DTO) ToType() *{{ $.Name | fc }} {
 // FromJSON generate a *{{ .Name | fc }} from a valid json (bytes)
 
 func FromJSON (jsonBytes []byte) (*{{ .Name | fc }}, error) {
-	{{ .Name | lc }} := &{{ .Name | fc }}{}
 	dto := &DTO{}
 	err := json.Unmarshal(jsonBytes, dto)
 	if err != nil {
         return New{{ .Name | fc }}(), errors.New("can not unmarshal {{ .Name | fc }}DTO")
 	}
-	{{- range .Fields }}
-	{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}{{- if .Custom }}.ToType(){{- end }}
-	{{- end }}
+	{{ .Name | lc }} := dto.ToType()
 	return {{ .Name | lc }}, nil
 }
 
 
 // ToJSON generate a valid JSON (bytes) from *{{ $.Name | fc }}
 func (x *{{ $.Name | fc }}Base) ToJSON () (string, error) {
-	dto := DTO{}
-	{{- range .Fields }}
-	{{- if .Exposed }}
-	dto.{{ .Name | fc }} = x.{{ .Name | lc }}{{ if .Custom }}.ToDTO(){{ end }}
-	{{- end }}
-	{{- end }}
+	dto := x.ToDTO()
 
 	bytes, err := json.Marshal(dto)
     if err != nil {

@@ -37,22 +37,18 @@ func (dto *DTO) ToType() *Role {
 // FromJSON generate a *Role from a valid json (bytes)
 
 func FromJSON(jsonBytes []byte) (*Role, error) {
-	role := &Role{}
 	dto := &DTO{}
 	err := json.Unmarshal(jsonBytes, dto)
 	if err != nil {
 		return NewRole(), errors.New("can not unmarshal RoleDTO")
 	}
-	role.id = dto.Id
-	role.name = dto.Name
+	role := dto.ToType()
 	return role, nil
 }
 
 // ToJSON generate a valid JSON (bytes) from *Role
 func (x *RoleBase) ToJSON() (string, error) {
-	dto := DTO{}
-	dto.Id = x.id
-	dto.Name = x.name
+	dto := x.ToDTO()
 
 	bytes, err := json.Marshal(dto)
 	if err != nil {

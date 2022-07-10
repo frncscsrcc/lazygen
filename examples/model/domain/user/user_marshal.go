@@ -53,32 +53,18 @@ func (dto *DTO) ToType() *User {
 // FromJSON generate a *User from a valid json (bytes)
 
 func FromJSON(jsonBytes []byte) (*User, error) {
-	user := &User{}
 	dto := &DTO{}
 	err := json.Unmarshal(jsonBytes, dto)
 	if err != nil {
 		return NewUser(), errors.New("can not unmarshal UserDTO")
 	}
-	user.id = dto.Id
-	user.username = dto.Username
-	user.name = dto.Name
-	user.surname = dto.Surname
-	user.password = dto.Password
-	user.phone = dto.Phone
-	user.role = dto.Role.ToType()
+	user := dto.ToType()
 	return user, nil
 }
 
 // ToJSON generate a valid JSON (bytes) from *User
 func (x *UserBase) ToJSON() (string, error) {
-	dto := DTO{}
-	dto.Id = x.id
-	dto.Username = x.username
-	dto.Name = x.name
-	dto.Surname = x.surname
-	dto.Password = x.password
-	dto.Phone = x.phone
-	dto.Role = x.role.ToDTO()
+	dto := x.ToDTO()
 
 	bytes, err := json.Marshal(dto)
 	if err != nil {
