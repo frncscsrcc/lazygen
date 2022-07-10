@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/ghodss/yaml"
 )
 
 type Field struct {
@@ -31,9 +32,9 @@ type EntityConfig struct {
 }
 
 type Config struct {
-	Module   string
-	Folder   string
-	Entities []EntityConfig
+	Module       string
+	FolderDomain string
+	Entities     []EntityConfig
 }
 
 var entities map[string]bool
@@ -49,41 +50,50 @@ func init() {
 	entities = make(map[string]bool)
 }
 
-func Generate(settingFile string) {
+func Generate(settingFile string) []string {
 	content, err := ioutil.ReadFile(settingFile)
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}
 
 	config := Config{}
-	err = json.Unmarshal(content, &config)
+	err = yaml.Unmarshal(content, &config)
 	if err != nil {
 		log.Fatal("Error during Unmarshal(): ", err)
 	}
-
-	//outputFolder := config.Folder
 
 	for _, entity := range config.Entities {
 		entities[strings.ToUpper(entity.Name)] = true
 	}
 
+	generatedFiles := make([]string, 0)
+
 	for _, entity := range config.Entities {
-		folder := config.Folder + "/" + LowerCase(entity.Name)
+		folder := config.FolderDomain + "/" + LowerCase(entity.Name)
 		os.MkdirAll(folder, 0755)
 
 		entity.Requires = make([]string, 0)
 		for _, field := range entity.Fields {
 			if _, validEntity := entities[strings.ToUpper(field.Type)]; validEntity {
-				pkg := config.Module + "/" + config.Folder + strings.ToLower(field.Type)
+				pkg := config.Module + "/" + config.FolderDomain + strings.ToLower(field.Type)
 				entity.Requires = append(entity.Requires, pkg)
 				field.Custom = true
 			}
 		}
+		typeSourceFile := folder + "/" + LowerCase(entity.Name) + ".go"
+		generateTypes(typeSourceFile, entity)
+		generatedFiles = append(generatedFiles, typeSourceFile)
 
-		generateTypes(folder+"/"+LowerCase(entity.Name)+".go", entity)
-		generateMarshal(folder+"/"+LowerCase(entity.Name)+"_marshal.go", entity)
-		generateCustom(folder+"/"+LowerCase(entity.Name)+"_custom.go", entity)
+		marshalSourceFile := folder + "/" + LowerCase(entity.Name) + "_marshal.go"
+		generateMarshal(marshalSourceFile, entity)
+		generatedFiles = append(generatedFiles, marshalSourceFile)
+
+		customSourceFile := folder + "/" + LowerCase(entity.Name) + "_custom.go"
+		generateCustom(customSourceFile, entity)
+		generatedFiles = append(generatedFiles, customSourceFile)
 	}
+
+	return generatedFiles
 }
 
 func FistCapital(input string) string {

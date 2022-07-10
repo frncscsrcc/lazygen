@@ -1,7 +1,16 @@
 package main
 
-import "github.com/frncscsrcc/lazygen/generator"
+import (
+	"os/exec"
+
+	"github.com/frncscsrcc/lazygen/generator"
+)
 
 func main() {
-	generator.Generate("entities.json")
+	filesToFormat := generator.Generate("entities.yaml")
+	for _, file := range filesToFormat {
+		if err := exec.Command("go", "fmt", file).Run(); err != nil {
+			panic(err)
+		}
+	}
 }
