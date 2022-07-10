@@ -7,11 +7,11 @@ package role
 
 // RoleBase is the base struct with the default getters and setters
 type RoleBase struct {
-	id int64 // Primary key for role
+	id   int64  // Primary key for role
 	name string // Role name
 
 	error error
-	self *Role
+	self  *Role
 }
 
 // -------------------------------------------
@@ -26,36 +26,37 @@ func NewRole() *Role {
 // -------------------------------------------
 
 // Error return the error associate to the object
-func (x *RoleBase) Error () error {
+func (x *RoleBase) Error() error {
 	return x.error
 }
 
 // -------------------------------------------
 
 // Error return the error associate to the object
-func (x *RoleBase) Validate () error {
+func (x *RoleBase) Validate() error {
 	x.error = nil
 	return x.error
 }
 
 // -------------------------------------------
 // Id returns Role.id
-func (x *RoleBase) Id () int64 {
+func (x *RoleBase) Id() int64 {
 	return x.id
 }
 
 // SetId sets Role.id
-func (x *RoleBase) SetId (v int64) *Role {
+func (x *RoleBase) SetId(v int64) *Role {
 	x.id = v
 	return x.self
 }
+
 // Name returns Role.name
-func (x *RoleBase) Name () string {
+func (x *RoleBase) Name() string {
 	return x.name
 }
 
 // SetName sets Role.name
-func (x *RoleBase) SetName (v string) *Role {
+func (x *RoleBase) SetName(v string) *Role {
 	x.name = v
 	return x.self
 }
@@ -63,7 +64,7 @@ func (x *RoleBase) SetName (v string) *Role {
 // -------------------------------------------
 
 // String implements Stringer
-func (x *RoleBase) String () string {
+func (x *RoleBase) String() string {
 	jsonString, err := x.ToJSON()
 	if err != nil {
 		panic(err)

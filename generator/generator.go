@@ -172,7 +172,7 @@ func generateSerialization(filename string, config EntityConfig) {
 		}
 	}()
 
-	tmpl, err := template.New("marshal.tpl").
+	tmpl, err := template.New("serialization.tpl").
 		Funcs(funcMap).
 		ParseFiles("./generator/templates/serialization.tpl")
 	if err != nil {
