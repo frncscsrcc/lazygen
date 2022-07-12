@@ -43,6 +43,7 @@ var funcMap = template.FuncMap{
 	"fc":          FistCapital,
 	"lc":          LowerCase,
 	"typeConvert": TypeConvert,
+	"package":     CustomPackage,
 	"getDTO":      GetDTO,
 }
 
@@ -118,14 +119,8 @@ func GetDTO(inputType string) string {
 	return TypeConvert(inputType)
 }
 
-func TypeConvert(inputType string) string {
-	inputTypeUc := strings.ToUpper(inputType)
-
-	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
-		return "*" + LowerCase(inputType) + "." + FistCapital(inputType)
-	}
-
-	switch inputTypeUc {
+func basicTypeConversion(inputType string) string {
+	switch strings.ToUpper(inputType) {
 	case "INT":
 		return "int"
 	case "BIGINT":
@@ -135,6 +130,26 @@ func TypeConvert(inputType string) string {
 	default:
 		panic("type " + inputType + " can not be converted in golang datatye")
 	}
+}
+
+func CustomPackage(inputType string) string {
+	inputTypeUc := strings.ToUpper(inputType)
+
+	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
+		return "*" + LowerCase(inputType)
+	}
+
+	return basicTypeConversion(inputType)
+}
+
+func TypeConvert(inputType string) string {
+	inputTypeUc := strings.ToUpper(inputType)
+
+	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
+		return "*" + LowerCase(inputType) + "." + FistCapital(inputType)
+	}
+
+	return basicTypeConversion(inputType)
 }
 
 func generateTypes(filename string, config EntityConfig) {

@@ -109,7 +109,10 @@ func (x *UserBase) SetPassword(v string) *User {
 
 // Phone returns []User.phone
 func (x *UserBase) Phone() []string {
-	return x.phone
+	if len(x.phone) > 0 {
+		return x.phone
+	}
+	return make([]string, 0)
 }
 
 func (x *UserBase) PhoneIsEmpty() bool {
@@ -146,7 +149,10 @@ func (x *UserBase) SetRole(v *role.Role) *User {
 
 // Addresses returns []User.addresses
 func (x *UserBase) Addresses() []*address.Address {
-	return x.addresses
+	if len(x.addresses) > 0 {
+		return x.addresses
+	}
+	return make([]*address.Address, 0)
 }
 
 func (x *UserBase) AddressesIsEmpty() bool {
@@ -168,6 +174,15 @@ func (x *UserBase) SetAddresses(v []*address.Address) *User {
 func (x *UserBase) AppendAddresses(v ...*address.Address) *User {
 	x.addresses = append(x.addresses, v...)
 	return x.self
+}
+
+// -------------------------------------------
+
+// Clone clones (copies) User
+func (x *UserBase) Clone() *User {
+	cloned := NewUser()
+	// CLONING LOGIC HERE!!!!! TODO
+	return cloned
 }
 
 // -------------------------------------------

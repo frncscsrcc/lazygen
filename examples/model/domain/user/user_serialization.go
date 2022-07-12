@@ -23,16 +23,24 @@ type DTO struct {
 	Addresses []*address.DTO `json:"addresses"`
 }
 
+// NewUser build a DTO empty structure
+func NewDTO() *DTO {
+	dto := &DTO{}
+	dto.Phone = make([]string, 0)
+	dto.Addresses = make([]*address.DTO, 0)
+	return dto
+}
+
 // -------------------------------------------
 
 func (x *UserBase) ToDTO() *DTO {
-	dto := &DTO{}
-	dto.Id = x.id
-	dto.Username = x.username
-	dto.Name = x.name
-	dto.Surname = x.surname
-	dto.Password = x.password
-	dto.Phone = x.phone
+	dto := NewDTO()
+	dto.Id = x.Id()
+	dto.Username = x.Username()
+	dto.Name = x.Name()
+	dto.Surname = x.Surname()
+	dto.Password = x.Password()
+	dto.Phone = x.Phone()
 	if x.role != nil {
 		dto.Role = x.role.ToDTO()
 	}
@@ -47,19 +55,18 @@ func (x *UserBase) ToDTO() *DTO {
 
 func (dto *DTO) ToType() *User {
 	user := NewUser()
-	user.id = dto.Id
-	user.username = dto.Username
-	user.name = dto.Name
-	user.surname = dto.Surname
-	user.password = dto.Password
-	user.phone = dto.Phone
+	user.SetId(dto.Id)
+	user.SetUsername(dto.Username)
+	user.SetName(dto.Name)
+	user.SetSurname(dto.Surname)
+	user.SetPassword(dto.Password)
+	user.SetPhone(dto.Phone)
 	if dto.Role != nil {
-		user.role = dto.Role.ToType()
+		user.SetRole(dto.Role.ToType())
 	}
-	user.addresses = make([]*address.Address, 0)
 	for _, address := range dto.Addresses {
 		if address != nil {
-			user.addresses = append(user.addresses, address.ToType())
+			user.AppendAddresses(address.ToType())
 		}
 	}
 	return user

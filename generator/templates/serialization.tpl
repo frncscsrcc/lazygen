@@ -19,10 +19,25 @@ type DTO struct {
     {{- end }}
 }
 
+// New{{ .Name | fc }} build a DTO empty structure
+func NewDTO() *DTO {
+	dto := &DTO{}
+	{{- range .Fields }}
+	{{- if .Multiple}}
+	{{- if .Custom }}
+	dto.{{ .Name | fc }} = make([]{{ .Type | package }}.DTO, 0)
+	{{- else }}
+	dto.{{ .Name | fc }} = make([]{{ .Type | typeConvert }}, 0)
+	{{- end }}
+	{{- end }}
+	{{- end }}
+	return dto
+}
+
 // -------------------------------------------
 
 func (x *{{ $.Name | fc }}Base) ToDTO() *DTO {
-	dto := &DTO{}
+	dto := NewDTO()
 	{{- range .Fields }}
 	{{- if .Exposed }}
 	{{- if .Custom }}
@@ -39,7 +54,7 @@ func (x *{{ $.Name | fc }}Base) ToDTO() *DTO {
 	}
 	{{- end }}
 	{{- else }}
-	dto.{{ .Name | fc }} = x.{{ .Name | lc }}
+	dto.{{ .Name | fc }} = x.{{ .Name | fc }}()
 	{{- end }}
 	{{- end }}
 	{{- end }}
@@ -52,19 +67,18 @@ func (dto *DTO) ToType() *{{ $.Name | fc }} {
 	{{- if .Exposed }}
 	{{- if .Custom }}
 	{{- if .Multiple }}
-	{{ $.Name | lc }}.{{ .Name | lc }} = make([]*{{ .Type | lc }}.{{ .Type | fc }}, 0)
 	for _, {{ .Type | lc }} := range(dto.{{ .Name | fc }} ){
 		if {{ .Type | lc }} != nil {
-			{{ $.Name | lc }}.{{ .Name | lc }} = append({{ $.Name | lc }}.{{ .Name | lc }}, {{ .Type | lc }}.ToType())
+			{{ $.Name | lc }}.Append{{ .Name | fc }}({{ .Type | lc }}.ToType())
 		}
 	}
 	{{- else }}
 	if dto.{{ .Name | fc }} != nil {
-		{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}.ToType()
+		{{ $.Name | lc }}.Set{{ .Name | fc }}(dto.{{ .Name | fc }}.ToType())
 	}
 	{{- end }}
 	{{- else }}
-	{{ $.Name | lc }}.{{ .Name | lc }} = dto.{{ .Name | fc }}
+	{{ $.Name | lc }}.Set{{ .Name | fc }}(dto.{{ .Name | fc }})
 	{{- end }}
 	{{- end }}
 	{{- end }}

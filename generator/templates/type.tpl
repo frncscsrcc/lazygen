@@ -60,7 +60,10 @@ func (x *{{ $.Name | fc }}Base) Validate () error {
 {{- if .Multiple }}
 // {{ .Name | fc }} returns []{{ $.Name | fc}}.{{ .Name }}
 func (x *{{ $.Name | fc }}Base) {{ .Name | fc }} () []{{ .Type | typeConvert }} {
-	return x.{{ .Name | lc }}
+	if len (x.{{ .Name | lc }}) > 0 {
+		return x.{{ .Name | lc }}
+	}
+	return make([]{{ .Type | typeConvert }}, 0)
 }
 
 func (x *{{ $.Name | fc }}Base) {{ .Name | fc }}IsEmpty () bool {
@@ -98,6 +101,15 @@ func (x *{{ $.Name | fc }}Base) Set{{ .Name | fc }} (v {{ .Type | typeConvert}})
 {{- end }}
 
 {{- end }}
+
+// -------------------------------------------
+
+// Clone clones (copies) {{ .Name | fc}}
+func (x *{{ $.Name | fc }}Base) Clone () *{{ $.Name | fc }} {
+	cloned := New{{ $.Name | fc }}()
+	// CLONING LOGIC HERE!!!!! TODO
+	return cloned
+}
 
 // -------------------------------------------
 

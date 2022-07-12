@@ -63,6 +63,15 @@ func (x *RoleBase) SetName(v string) *Role {
 
 // -------------------------------------------
 
+// Clone clones (copies) Role
+func (x *RoleBase) Clone() *Role {
+	cloned := NewRole()
+	// CLONING LOGIC HERE!!!!! TODO
+	return cloned
+}
+
+// -------------------------------------------
+
 // String implements Stringer
 func (x *RoleBase) String() string {
 	jsonString, err := x.ToJSON()

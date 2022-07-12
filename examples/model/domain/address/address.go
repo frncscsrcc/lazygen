@@ -99,6 +99,15 @@ func (x *AddressBase) SetCountry(v string) *Address {
 
 // -------------------------------------------
 
+// Clone clones (copies) Address
+func (x *AddressBase) Clone() *Address {
+	cloned := NewAddress()
+	// CLONING LOGIC HERE!!!!! TODO
+	return cloned
+}
+
+// -------------------------------------------
+
 // String implements Stringer
 func (x *AddressBase) String() string {
 	jsonString, err := x.ToJSON()

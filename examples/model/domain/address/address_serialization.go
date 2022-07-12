@@ -18,25 +18,31 @@ type DTO struct {
 	Country string `json:"country"`
 }
 
+// NewAddress build a DTO empty structure
+func NewDTO() *DTO {
+	dto := &DTO{}
+	return dto
+}
+
 // -------------------------------------------
 
 func (x *AddressBase) ToDTO() *DTO {
-	dto := &DTO{}
-	dto.Id = x.id
-	dto.Street = x.street
-	dto.Number = x.number
-	dto.Zip = x.zip
-	dto.Country = x.country
+	dto := NewDTO()
+	dto.Id = x.Id()
+	dto.Street = x.Street()
+	dto.Number = x.Number()
+	dto.Zip = x.Zip()
+	dto.Country = x.Country()
 	return dto
 }
 
 func (dto *DTO) ToType() *Address {
 	address := NewAddress()
-	address.id = dto.Id
-	address.street = dto.Street
-	address.number = dto.Number
-	address.zip = dto.Zip
-	address.country = dto.Country
+	address.SetId(dto.Id)
+	address.SetStreet(dto.Street)
+	address.SetNumber(dto.Number)
+	address.SetZip(dto.Zip)
+	address.SetCountry(dto.Country)
 	return address
 }
 

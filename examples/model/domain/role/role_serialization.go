@@ -15,19 +15,25 @@ type DTO struct {
 	Name string `json:"name"`
 }
 
+// NewRole build a DTO empty structure
+func NewDTO() *DTO {
+	dto := &DTO{}
+	return dto
+}
+
 // -------------------------------------------
 
 func (x *RoleBase) ToDTO() *DTO {
-	dto := &DTO{}
-	dto.Id = x.id
-	dto.Name = x.name
+	dto := NewDTO()
+	dto.Id = x.Id()
+	dto.Name = x.Name()
 	return dto
 }
 
 func (dto *DTO) ToType() *Role {
 	role := NewRole()
-	role.id = dto.Id
-	role.name = dto.Name
+	role.SetId(dto.Id)
+	role.SetName(dto.Name)
 	return role
 }
 
