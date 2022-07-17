@@ -1,4 +1,4 @@
-// User: Tish is an user
+// User: This is an user
 package user
 
 // User allows to overwrite the base class
@@ -18,9 +18,3 @@ func (x *User) SetFieldX (s string) *User {
 	return x.self
 }
 */
-
-// SetPassword sets User.password
-func (x *User) SetPassword(v string) *User {
-	x.password = "HASH[" + v + "]"
-	return x.self
-}

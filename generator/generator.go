@@ -12,6 +12,25 @@ import (
 	"github.com/ghodss/yaml"
 )
 
+type Config struct {
+	Module                string
+	FolderDomain          string
+	FolderAPI             string
+	BasePathAPI           string
+	FolderListener        string
+	GenerateCRUDEndpoints bool
+	Entities              []EntityConfig
+}
+
+type EntityConfig struct {
+	Name          string
+	Description   string
+	Fields        []*Field
+	Requires      []string
+	RouterPackage string
+	API           APIConfig
+}
+
 type Field struct {
 	Name        string
 	Type        string
@@ -24,17 +43,16 @@ type Field struct {
 	Private     bool
 }
 
-type EntityConfig struct {
-	Name        string
-	Description string
-	Fields      []*Field
-	Requires    []string
+type APIConfig struct {
+	Create APIResource
+	Read   APIResource
+	Update APIResource
+	Delete APIResource
 }
 
-type Config struct {
-	Module       string
-	FolderDomain string
-	Entities     []EntityConfig
+type APIResource struct {
+	Enabled bool
+	Roles   []string
 }
 
 var entities map[string]bool
@@ -76,130 +94,62 @@ func Generate(settingFile string) []string {
 		entity.Requires = make([]string, 0)
 		for _, field := range entity.Fields {
 			if _, validEntity := entities[strings.ToUpper(field.Type)]; validEntity {
-				pkg := config.Module + "/" + config.FolderDomain + strings.ToLower(field.Type)
+				pkg := config.Module + "/" + config.FolderDomain + "/" + strings.ToLower(field.Type)
 				entity.Requires = append(entity.Requires, pkg)
 				field.Custom = true
 			}
 		}
-		typeSourceFile := folder + "/" + LowerCase(entity.Name) + ".go"
-		generateTypes(typeSourceFile, entity)
+		typeSourceFile := folder + "/autogen_" + LowerCase(entity.Name) + ".go"
+		executeTemplate(typeSourceFile, "type.tpl", entity, true)
 		generatedFiles = append(generatedFiles, typeSourceFile)
 
-		serializationlSourceFile := folder + "/" + LowerCase(entity.Name) + "_serialization.go"
-		generateSerialization(serializationlSourceFile, entity)
+		serializationlSourceFile := folder + "/autogen_" + LowerCase(entity.Name) + "_serialization.go"
+		executeTemplate(serializationlSourceFile, "serialization.tpl", entity, true)
 		generatedFiles = append(generatedFiles, serializationlSourceFile)
 
 		customSourceFile := folder + "/" + LowerCase(entity.Name) + "_custom.go"
-		generateCustom(customSourceFile, entity)
+		executeTemplate(customSourceFile, "custom.tpl", entity, false)
 		generatedFiles = append(generatedFiles, customSourceFile)
+	}
+
+	if config.GenerateCRUDEndpoints {
+		os.MkdirAll(config.FolderAPI, 0755)
+		routerAPIFile := config.FolderAPI + "/autogen_router.go"
+		executeTemplate(routerAPIFile, "routerAPI.tpl", "", true)
+		generatedFiles = append(generatedFiles, routerAPIFile)
+
+		for _, entity := range config.Entities {
+			entity.RouterPackage = config.Module + "/" + config.FolderAPI
+			folder := config.FolderAPI + "/" + LowerCase(entity.Name)
+			os.MkdirAll(folder, 0755)
+
+			baseAPIFile := folder + "/autogen_" + LowerCase(entity.Name) + ".go"
+			if entity.API.Create.Enabled ||
+				entity.API.Read.Enabled ||
+				entity.API.Update.Enabled ||
+				entity.API.Delete.Enabled {
+				executeTemplate(baseAPIFile, "baseRESTAPI.tpl", entity, true)
+				generatedFiles = append(generatedFiles, baseAPIFile)
+			} else {
+				os.Remove(baseAPIFile)
+			}
+		}
+
+		os.MkdirAll(config.FolderListener, 0755)
+		listenerFile := config.FolderListener + "/autogen_listener.go"
+		executeTemplate(listenerFile, "listener.tpl", config, true)
+		generatedFiles = append(generatedFiles, listenerFile)
+
+		customListenerFile := config.FolderListener + "/custom_listener.go"
+		executeTemplate(customListenerFile, "customListener.tpl", "", false)
+		generatedFiles = append(generatedFiles, customListenerFile)
 	}
 
 	return generatedFiles
 }
 
-func FistCapital(input string) string {
-	output := ""
-	if len(input) == 0 {
-		return ""
-	}
-	output += strings.ToUpper(string(input[0]))
-	output += strings.ToLower(input[1:])
-	return output
-}
-
-func LowerCase(input string) string {
-	return strings.ToLower(input)
-}
-
-func GetDTO(inputType string) string {
-	inputTypeUc := strings.ToUpper(inputType)
-	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
-		return "*" + LowerCase(inputType) + ".DTO"
-	}
-	return TypeConvert(inputType)
-}
-
-func basicTypeConversion(inputType string) string {
-	switch strings.ToUpper(inputType) {
-	case "INT":
-		return "int"
-	case "BIGINT":
-		return "int64"
-	case "STRING":
-		return "string"
-	default:
-		panic("type " + inputType + " can not be converted in golang datatye")
-	}
-}
-
-func CustomPackage(inputType string) string {
-	inputTypeUc := strings.ToUpper(inputType)
-
-	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
-		return "*" + LowerCase(inputType)
-	}
-
-	return basicTypeConversion(inputType)
-}
-
-func TypeConvert(inputType string) string {
-	inputTypeUc := strings.ToUpper(inputType)
-
-	if _, isValidEntity := entities[inputTypeUc]; isValidEntity {
-		return "*" + LowerCase(inputType) + "." + FistCapital(inputType)
-	}
-
-	return basicTypeConversion(inputType)
-}
-
-func generateTypes(filename string, config EntityConfig) {
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-	// close fi on exit and check for its returned error
-	defer func() {
-		if err := file.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	tmpl, err := template.New("type.tpl").
-		Funcs(funcMap).
-		ParseFiles("./generator/templates/type.tpl")
-	if err != nil {
-		panic(err)
-	}
-
-	tmpl.Execute(file, config)
-	log.Printf("- %s generated\n", filename)
-}
-
-func generateSerialization(filename string, config EntityConfig) {
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-	// close fi on exit and check for its returned error
-	defer func() {
-		if err := file.Close(); err != nil {
-			panic(err)
-		}
-	}()
-
-	tmpl, err := template.New("serialization.tpl").
-		Funcs(funcMap).
-		ParseFiles("./generator/templates/serialization.tpl")
-	if err != nil {
-		panic(err)
-	}
-
-	tmpl.Execute(file, config)
-	log.Printf("- %s generated\n", filename)
-}
-
-func generateCustom(filename string, config EntityConfig) {
-	if checkFileExists(filename) {
+func executeTemplate(filename string, templateName string, data interface{}, allowOverwrite bool) {
+	if !allowOverwrite && checkFileExists(filename) {
 		log.Printf("- %s exists, skipping\n", filename)
 		return
 	}
@@ -215,20 +165,17 @@ func generateCustom(filename string, config EntityConfig) {
 		}
 	}()
 
-	tmpl, err := template.New("custom.tpl").
-		Funcs(funcMap).
-		ParseFiles("./generator/templates/custom.tpl")
+	tmpl, err := template.New(templateName).Funcs(funcMap).ParseFiles("./generator/templates/" + templateName)
 	if err != nil {
 		panic(err)
 	}
 
-	tmpl.Execute(file, config)
+	tmpl.Execute(file, data)
 	log.Printf("- %s generated\n", filename)
 }
 
 func checkFileExists(filePath string) bool {
 	_, error := os.Stat(filePath)
-	//return !os.IsNotExist(err)
 	return !errors.Is(error, os.ErrNotExist)
 }
 

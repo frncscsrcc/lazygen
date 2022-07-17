@@ -1,9 +1,15 @@
 ---
 Module: github.com/frncscsrcc/lazygen
-FolderDomain: examples/model/domain/
+FolderDomain: examples/model/domain
+
+FolderAPI: examples/api
+BasePathAPI: /api/v1
+FolderListener: examples/listener
+GenerateCRUDEndpoints: true
+
 Entities:
 - Name: user
-  Description: Tish is an user
+  Description: This is an user
   Fields:
   - Name: id
     Type: bigint
@@ -43,6 +49,16 @@ Entities:
     Description: User addresses
     Exposed: true
     Multiple: true
+  API:
+    Read:
+      Enabled: true
+      Roles: [User, Guest]
+    Update:
+      Enabled: true
+      Roles: [User]
+    Delete:
+      Enabled: true
+      Roles: [Admin]
 - Name: role
   Description: This is a Role description
   Fields:
@@ -57,6 +73,19 @@ Entities:
     Description: Role name
     Serchable: true
     Exposed: true
+  API:
+    Create:
+      Enabled: true
+      Roles: [Admin]
+    Read:
+      Enabled: true
+      Roles: [User, Guest]
+    Update:
+      Enabled: true
+      Roles: [User]
+    Delete:
+      Enabled: true
+      Roles: [Admin]    
 - Name: address
   Description: This entity reppresent an user address
   Fields:

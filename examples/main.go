@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/frncscsrcc/lazygen/examples/listener"
+
 	"github.com/frncscsrcc/lazygen/examples/model/domain/address"
 	"github.com/frncscsrcc/lazygen/examples/model/domain/role"
 	"github.com/frncscsrcc/lazygen/examples/model/domain/user"
@@ -49,4 +51,9 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("%+v\n", user2)
+
+	fmt.Print("API\n----------------------------------\n")
+
+	listener.StartListener("0.0.0.0", "8081")
+
 }

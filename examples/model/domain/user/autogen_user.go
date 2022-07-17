@@ -2,7 +2,7 @@
 // IF YOU NEED TO OVERWRITE OR ADD METHODS TO `User`, CREATE
 // ANOTHER .go FILE IN THE PACKAGE `user`
 
-// User: Tish is an user
+// User: This is an user
 package user
 
 import (
